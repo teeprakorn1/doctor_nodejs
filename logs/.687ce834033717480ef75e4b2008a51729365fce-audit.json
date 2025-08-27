@@ -1,0 +1,15 @@
+{
+    "keep": {
+        "days": true,
+        "amount": 60
+    },
+    "auditLog": "E:\\doctor_project\\doctor_nodejs\\logs\\.687ce834033717480ef75e4b2008a51729365fce-audit.json",
+    "files": [
+        {
+            "date": 1756288047218,
+            "name": "E:\\doctor_project\\doctor_nodejs\\logs\\access-2025-08-27.log",
+            "hash": "194f5c826403f09e388b46d693ed1673b6351c2c12e5e2adaded9387e7993dfc"
+        }
+    ],
+    "hashType": "sha256"
+}

@@ -1,0 +1,239 @@
+openapi: 3.0.0
+info:
+  title: Doctor API
+  version: 1.0.0
+  description: >
+    Doctor API documentation for the Telemedicine system.
+
+servers:
+  - url: http://localhost:3000
+    description: Local development server
+
+paths:
+  /api/health:
+    get:
+      summary: Check server status
+      description: Endpoint to check if the server is running properly
+      tags:
+        - Test
+      responses:
+        '200':
+          description: Server is running
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Server is Running."
+                  status:
+                    type: boolean
+                    example: true
+
+  /api/test/encrypt:
+    post:
+      summary: Encrypt Password
+      description: Encrypts a plain text password using Bcrypt and returns the hashed value.
+      tags:
+        - Test
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - password
+              properties:
+                password:
+                  type: string
+                  example: mypassword123
+                  description: The plain text password to be encrypted.
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              required:
+                - password
+              properties:
+                password:
+                  type: string
+                  example: mypassword123
+                  description: The plain text password to be encrypted.
+      responses:
+        '200':
+          description: Password encrypted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "$2b$14$p.Fv7a5PbQVrwnSgQGFfHe96gpZKB0xRPIY.PN4FvWyfvhHC08gR2"
+                    description: The Bcrypt hashed password.
+                  status:
+                    type: boolean
+                    example: true
+                    description: Indicates success.
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Password is required."
+                    description: Error message.
+                  status:
+                    type: boolean
+                    example: false
+                    description: Indicates failure.
+        '403':
+          description: Forbidden
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "This API is not allowed in production."
+                    description: Error message.
+                  status:
+                    type: boolean
+                    example: false
+                    description: Indicates failure.
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Internal server error."
+                    description: Error message.
+                  status:
+                    type: boolean
+                    example: false
+                    description: Indicates failure.
+
+  /api/test/decrypt:
+    post:
+      summary: Decrypt Password
+      description: Decrypts a plain text password against a Bcrypt hash.
+      tags:
+        - Test
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - password
+                - hash
+              properties:
+                password:
+                  type: string
+                  example: mypassword123
+                  description: The plain text password to decrypt.
+                hash:
+                  type: string
+                  example: "$2b$14$p.Fv7a5PbQVrwnSgQGFfHe96gpZKB0xRPIY.PN4FvWyfvhHC08gR2"
+                  description: The Bcrypt hashed password to compare against.
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              required:
+                - password
+                - hash
+              properties:
+                password:
+                  type: string
+                  example: mypassword123
+                  description: The plain text password to decrypt.
+                hash:
+                  type: string
+                  example: "$2b$14$p.Fv7a5PbQVrwnSgQGFfHe96gpZKB0xRPIY.PN4FvWyfvhHC08gR2"
+                  description: The Bcrypt hashed password to compare against.
+      responses:
+        '200':
+          description: Password decrypted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "The password is correct."
+                    description: Verification message.
+                  status:
+                    type: boolean
+                    example: true
+                    description: Indicates success.
+        '400':
+          description: Bad Request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Password and hash are required."
+                    description: Error message.
+                  status:
+                    type: boolean
+                    example: false
+                    description: Indicates failure.
+        '403':
+            description: Forbidden
+            content:
+              application/json:
+                schema:
+                  type: object
+                  properties:
+                    message:
+                      type: string
+                      example: "This API is not allowed in production."
+                      description: Error message.
+                    status:
+                      type: boolean
+                      example: false
+                      description: Indicates failure.
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Internal server error."
+                    description: Error message.
+                  status:
+                    type: boolean
+                    example: false
+                    description: Indicates failure.
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+    schemas:
+    ErrorResponse:
+      type: object
+      properties:
+        message:
+          type: string
+        status:
+          type: boolean
