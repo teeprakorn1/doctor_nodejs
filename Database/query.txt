@@ -1,0 +1,91 @@
+CREATE DATABASE IF NOT EXISTS doctorDB CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+USE doctorDB;
+
+CREATE TABLE Users(
+	Users_ID INT(13) NOT NULL AUTO_INCREMENT UNIQUE PRIMARY KEY,
+    Users_Email VARCHAR(255) NOT NULL UNIQUE,
+    Users_Username VARCHAR(63) NOT NULL UNIQUE,
+    Users_Password VARCHAR(127) NOT NULL,
+    Users_RegisTime DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    Users_Type VARCHAR(15) NOT NULL,
+    Users_IsActive BOOLEAN NOT NULL DEFAULT TRUE
+);
+
+CREATE TABLE Patient(
+	Patient_ID INT(13) NOT NULL AUTO_INCREMENT UNIQUE PRIMARY KEY,
+    Patient_FirstName VARCHAR(63) NOT NULL,
+    Patient_LastName VARCHAR(63) NOT NULL,
+    Patient_Phone CHAR(15),
+    Patient_Gender ENUM('Male','Female'),
+    Patient_MedicalHistory VARCHAR(1023),
+    Patient_RegisTime DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    Users_ID INT(13) NOT NULL,
+    FOREIGN KEY (Users_ID) REFERENCES Users(Users_ID)
+);
+
+CREATE TABLE Specialty(
+	Specialty_ID INT(13) NOT NULL AUTO_INCREMENT UNIQUE PRIMARY KEY,
+    Specialty_Name VARCHAR(1023) NOT NULL
+);
+
+CREATE TABLE Doctor(
+	Doctor_ID INT(13) NOT NULL AUTO_INCREMENT UNIQUE PRIMARY KEY,
+    Doctor_FirstName VARCHAR(63) NOT NULL,
+    Doctor_LastName VARCHAR(63) NOT NULL,
+    Doctor_Phone CHAR(15),
+    Doctor_RegisTime DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    Users_ID INT(13) NOT NULL,
+    Specialty_ID INT(13) NOT NULL,
+    FOREIGN KEY (Users_ID) REFERENCES Users(Users_ID),
+    FOREIGN KEY (Specialty_ID) REFERENCES Specialty(Specialty_ID)
+);
+
+CREATE TABLE Availability(
+	Availability_ID INT(13) NOT NULL AUTO_INCREMENT UNIQUE PRIMARY KEY,
+    Availability_Date DATE NOT NULL,
+    Availability_StartTime TIME NOT NULL,
+    Availability_EndTime TIME NOT NULL,
+    Availability_IsBooked BOOLEAN NOT NULL DEFAULT FALSE,
+    Doctor_ID INT(13) NOT NULL,
+    FOREIGN KEY (Doctor_ID) REFERENCES Doctor(Doctor_ID)
+);
+
+CREATE TABLE AppointmentStatus(
+    AppointmentStatus_ID INT(13) NOT NULL AUTO_INCREMENT UNIQUE PRIMARY KEY,
+    AppointmentStatus_Name VARCHAR(63) NOT NULL,
+    AppointmentStatus_Description VARCHAR(1023)
+);
+
+CREATE TABLE Appointment(
+	Appointment_ID INT(13) NOT NULL AUTO_INCREMENT UNIQUE PRIMARY KEY,
+    Appointment_RegisTime DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    Doctor_ID INT(13) NOT NULL,
+    Patient_ID INT(13) NOT NULL,
+    Availability_ID INT(13) NOT NULL,
+    AppointmentStatus_ID INT(13) NOT NULL,
+    FOREIGN KEY (Doctor_ID) REFERENCES Doctor(Doctor_ID),
+    FOREIGN KEY (Patient_ID) REFERENCES Patient(Patient_ID),
+    FOREIGN KEY (Availability_ID) REFERENCES Availability(Availability_ID),
+    FOREIGN KEY (AppointmentStatus_ID) REFERENCES AppointmentStatus(AppointmentStatus_ID)
+);
+
+INSERT INTO AppointmentStatus (AppointmentStatus_Name, AppointmentStatus_Description) VALUES
+('Pending', 'รอการยืนยัน'),('Confirmed', 'ได้รับการยืนยันแล้ว'),('Completed', 'การนัดหมายเสร็จสิ้น'),('Cancelled', 'ยกเลิกการนัดหมาย'),('No-show', 'ผู้ป่วยไม่มาตามนัด');
+
+-- Mock Data
+INSERT INTO Users (Users_Email, Users_Username, Users_Password, Users_Type) VALUES
+('patient1@gmail.com', 'patient1', 'hashedpassword1', 'patient'),
+('patient2@gmail.com', 'patient2', 'hashedpassword2', 'patient'),
+('doctor1@gmail.com', 'doctor1', 'hashedpassword3', 'doctor'),
+('doctor2@gmail.com', 'doctor2', 'hashedpassword4', 'doctor');
+
+INSERT INTO Patient (Patient_FirstName, Patient_LastName, Patient_Gender, Users_ID) VALUES
+('ชายน้อย', 'คนเหนือเมฆ', 'Male', 1), ('หญิงใหญ่', 'คนใต้ดิน', 'Female', 2);
+
+INSERT INTO Specialty (Specialty_Name) VALUES 
+('กุมารเวชกรรม'), ('อายุรกรรม'), ('ศัลยกรรม'), ('โรคหัวใจ');
+
+INSERT INTO Doctor (Doctor_FirstName, Doctor_LastName, Doctor_Phone, Users_ID, Specialty_ID)
+VALUES
+('ดร.สมเล็ก', 'คนเมืองคอน', '0833333333', 3, 2),
+('นพ.สมใหญ่', 'คนเมืองแถน', '0844444444', 4, 4);

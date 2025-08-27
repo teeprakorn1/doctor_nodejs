@@ -223,6 +223,204 @@ paths:
                     example: false
                     description: Indicates failure.
 
+  /api/verifyToken:
+    post:
+      summary: Verify Token for Website
+      description: Verifies the JWT token sent via HttpOnly cookie and returns user info if valid.
+      tags:
+        - Verify
+      responses:
+        '200':
+          description: Token is valid
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  Users_ID:
+                    type: integer
+                    example: 123
+                  Users_Email:
+                    type: string
+                    example: user@example.com
+                  Users_Username:
+                    type: string
+                    example: username123
+                  UsersType_ID:
+                    type: integer
+                    example: 1
+                  Users_Type:
+                    type: string
+                    example: doctor
+                  message:
+                    type: string
+                    example: Token is valid.
+                  status:
+                    type: boolean
+                    example: true
+        '401':
+          description: Invalid token
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Invalid token.
+                  status:
+                    type: boolean
+                    example: false
+      security: []
+
+  /api/login/website:
+    post:
+      summary: Login Website
+      description: Authenticates a doctor or patient user and sets an HttpOnly token cookie
+      tags:
+        - Authentication
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - Users_Email
+                - Users_Password
+              properties:
+                Users_Email:
+                  type: string
+                  description: User email or username
+                  example: patient@gmail.com
+                Users_Password:
+                  type: string
+                  description: User password
+                  example: Cs12345678
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              required:
+                - Users_Email
+                - Users_Password
+              properties:
+                Users_Email:
+                  type: string
+                  description: User email or username
+                  example: patient@gmail.com
+                Users_Password:
+                  type: string
+                  description: User password
+                  example: Cs12345678
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: The login was successful.
+                  status:
+                    type: boolean
+                    example: true
+          headers:
+            Set-Cookie:
+              description: HttpOnly cookie containing JWT token
+              schema:
+                type: string
+                example: token=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+        '400':
+          description: Missing or invalid parameters / Invalid user type
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Please fill in the correct parameters as required.
+                  status:
+                    type: boolean
+                    example: false
+        '401':
+          description: Email or password incorrect
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Email or password is incorrect.
+                  status:
+                    type: boolean
+                    example: false
+        '404':
+          description: User type details not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: User type details not found.
+                  status:
+                    type: boolean
+                    example: false
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: An error occurred on the server.
+                  status:
+                    type: boolean
+                    example: false
+      security: []
+
+  /api/logout:
+    post:
+      summary: Logout Website
+      description: Clears the user's token cookie and logs out the user
+      tags:
+        - Authentication
+      responses:
+        '200':
+          description: Logout successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Logged out successfully.
+                  status:
+                    type: boolean
+                    example: true
+        '401':
+          description: Unauthorized / Invalid token
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Unauthorized
+                  status:
+                    type: boolean
+                    example: false
+      security: []
+
 components:
   securitySchemes:
     bearerAuth:

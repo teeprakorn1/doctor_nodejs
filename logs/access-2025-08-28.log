@@ -1,0 +1,22 @@
+[28-08-2025 02:54:44] HTTP: [User: anonymous] → GET /api-docs/ from IP ::1 (Localhost) | UA: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36
+[28-08-2025 02:54:44] INFO: [User: anonymous] ← 304 GET /api-docs/ | 12.09 ms from ::1
+[28-08-2025 02:54:44] HTTP: [User: anonymous] → GET /api-docs/swagger-ui.css from IP ::1 (Localhost) | UA: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36
+[28-08-2025 02:54:44] HTTP: [User: anonymous] → GET /api-docs/swagger-ui-bundle.js from IP ::1 (Localhost) | UA: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36
+[28-08-2025 02:54:44] INFO: [User: anonymous] ← 304 GET /api-docs/swagger-ui.css | 7.51 ms from ::1
+[28-08-2025 02:54:44] HTTP: [User: anonymous] → GET /api-docs/swagger-ui-standalone-preset.js from IP ::1 (Localhost) | UA: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36
+[28-08-2025 02:54:44] INFO: [User: anonymous] ← 304 GET /api-docs/swagger-ui-bundle.js | 9.87 ms from ::1
+[28-08-2025 02:54:44] INFO: [User: anonymous] ← 304 GET /api-docs/swagger-ui-standalone-preset.js | 4.62 ms from ::1
+[28-08-2025 02:54:44] HTTP: [User: anonymous] → GET /api-docs/swagger-ui-init.js from IP ::1 (Localhost) | UA: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36
+[28-08-2025 02:54:44] INFO: [User: anonymous] ← 200 GET /api-docs/swagger-ui-init.js | 4.32 ms from ::1
+[28-08-2025 02:55:39] HTTP: [User: anonymous] → GET /api-docs/ from IP ::1 (Localhost) | UA: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36
+[28-08-2025 02:55:39] INFO: [User: anonymous] ← 304 GET /api-docs/ | 10.78 ms from ::1
+[28-08-2025 02:55:39] HTTP: [User: anonymous] → GET /api-docs/swagger-ui.css from IP ::1 (Localhost) | UA: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36
+[28-08-2025 02:55:39] HTTP: [User: anonymous] → GET /api-docs/swagger-ui-bundle.js from IP ::1 (Localhost) | UA: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36
+[28-08-2025 02:55:39] HTTP: [User: anonymous] → GET /api-docs/swagger-ui-standalone-preset.js from IP ::1 (Localhost) | UA: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36
+[28-08-2025 02:55:39] HTTP: [User: anonymous] → GET /api-docs/swagger-ui-init.js from IP ::1 (Localhost) | UA: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36
+[28-08-2025 02:55:39] INFO: [User: anonymous] ← 200 GET /api-docs/swagger-ui-init.js | 1.95 ms from ::1
+[28-08-2025 02:55:39] INFO: [User: anonymous] ← 304 GET /api-docs/swagger-ui.css | 8.96 ms from ::1
+[28-08-2025 02:55:39] INFO: [User: anonymous] ← 304 GET /api-docs/swagger-ui-bundle.js | 9.22 ms from ::1
+[28-08-2025 02:55:39] INFO: [User: anonymous] ← 304 GET /api-docs/swagger-ui-standalone-preset.js | 9.03 ms from ::1
+[28-08-2025 02:55:39] HTTP: [User: anonymous] → GET /api-docs/favicon-32x32.png from IP ::1 (Localhost) | UA: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36
+[28-08-2025 02:55:39] INFO: [User: anonymous] ← 304 GET /api-docs/favicon-32x32.png | 3.03 ms from ::1

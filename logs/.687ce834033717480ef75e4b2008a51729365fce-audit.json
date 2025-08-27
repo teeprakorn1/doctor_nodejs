@@ -9,6 +9,11 @@
             "date": 1756288047218,
             "name": "E:\\doctor_project\\doctor_nodejs\\logs\\access-2025-08-27.log",
             "hash": "194f5c826403f09e388b46d693ed1673b6351c2c12e5e2adaded9387e7993dfc"
+        },
+        {
+            "date": 1756323423170,
+            "name": "E:\\doctor_project\\doctor_nodejs\\logs\\access-2025-08-28.log",
+            "hash": "09fb77e57f77f72bb3f3005fd9e354d29dbfc453fc32fbf247b60eef1d63707d"
         }
     ],
     "hashType": "sha256"
