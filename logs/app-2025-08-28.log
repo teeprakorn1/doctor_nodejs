@@ -9,3 +9,9 @@
 [28-08-2025 02:55:39] INFO: [User: anonymous] ← 304 GET /api-docs/swagger-ui-bundle.js | 9.22 ms from ::1
 [28-08-2025 02:55:39] INFO: [User: anonymous] ← 304 GET /api-docs/swagger-ui-standalone-preset.js | 9.03 ms from ::1
 [28-08-2025 02:55:39] INFO: [User: anonymous] ← 304 GET /api-docs/favicon-32x32.png | 3.03 ms from ::1
+[28-08-2025 03:11:37] INFO: [User: anonymous] ← 304 GET /api-docs/ | 12.73 ms from ::1
+[28-08-2025 03:11:37] INFO: [User: anonymous] ← 200 GET /api-docs/swagger-ui-init.js | 1.97 ms from ::1
+[28-08-2025 03:11:37] INFO: [User: anonymous] ← 304 GET /api-docs/swagger-ui.css | 8.98 ms from ::1
+[28-08-2025 03:11:37] INFO: [User: anonymous] ← 304 GET /api-docs/swagger-ui-bundle.js | 9.15 ms from ::1
+[28-08-2025 03:11:37] INFO: [User: anonymous] ← 304 GET /api-docs/swagger-ui-standalone-preset.js | 9.01 ms from ::1
+[28-08-2025 03:11:37] INFO: [User: anonymous] ← 304 GET /api-docs/favicon-32x32.png | 1.88 ms from ::1

@@ -4,6 +4,7 @@ const fs = require('fs');
 const path = require('path');
 const express = require('express');
 const bcrypt = require('bcrypt');
+const validator = require('validator');
 const cookieParser = require("cookie-parser");
 const helmet = require('helmet');
 
@@ -113,7 +114,7 @@ if (isProduction) {
 ////////////////////////////////// TEST API ///////////////////////////////////////
 // Server Test
 app.get('/api/health', (req, res) => {
-  res.json({ message: "Server is Running." ,status: true });
+  res.json({ message: "Server is Running.", status: true });
 });
 
 // Encrypt Test
@@ -271,6 +272,106 @@ app.post('/api/logout', (req, res) => {
     domain: isProduction ? process.env.COOKIE_DOMAIN_PROD : undefined
   });
   res.status(200).json({ message: 'Logged out successfully.', status: true });
+});
+
+// API Patient Register
+app.post('/api/register/patient', RateLimiter(1 * 60 * 1000, 5), async (req, res) => {
+  let { Users_Email, Users_Username, Users_Password, Patient_FirstName,
+    Patient_LastName, Patient_Phone, Patient_Gender, Patient_MedicalHistory } = req.body || {};
+
+  if (!Users_Email || !Users_Username || !Users_Password || !Patient_FirstName || !Patient_LastName || !Patient_Gender) {
+    return res.status(400).json({ message: 'Please fill in all required fields.', status: false });
+  }
+
+  Users_Email = xss(Users_Email);
+  if (!validator.isEmail(Users_Email)) {
+    return res.status(400).json({ message: 'Invalid email format.', status: false });
+  }
+  Users_Email = validator.normalizeEmail(Users_Email);
+
+  Users_Username = xss(Users_Username);
+  if (!validator.isAlphanumeric(Users_Username) || Users_Username.length < 3 || Users_Username.length > 20) {
+    return res.status(400).json({ message: 'Username must be 3-20 characters and alphanumeric.', status: false });
+  }
+
+  Users_Password = xss(Users_Password);
+  if (!validator.isStrongPassword(Users_Password, { minLength: 8, minNumbers: 1, minSymbols: 0, minUppercase: 1, minLowercase: 1 })) {
+    return res.status(400).json({ message: 'Password is not strong enough.', status: false });
+  }
+
+  Patient_FirstName = xss(Patient_FirstName);
+  if (!/^[A-Za-zก-ฮะ-๛\s]+$/.test(Patient_FirstName)) {
+    return res.status(400).json({ message: 'First name must contain only Thai or English letters.', status: false });
+  }
+
+  Patient_LastName = xss(Patient_LastName);
+  if (!/^[A-Za-zก-ฮะ-๛\s]+$/.test(Patient_LastName)) {
+    return res.status(400).json({ message: 'Last name must contain only Thai or English letters.', status: false });
+  }
+
+  Patient_Phone = Patient_Phone ? xss(Patient_Phone) : null;
+  if (Patient_Phone && !validator.isMobilePhone(Patient_Phone, 'th-TH')) {
+    return res.status(400).json({ message: 'Invalid phone number.', status: false });
+  }
+
+  Patient_Gender = xss(Patient_Gender);
+  if (!['Male', 'Female'].includes(Patient_Gender)) {
+    return res.status(400).json({ message: 'Gender must be either Male or Female.', status: false });
+  }
+
+  Patient_MedicalHistory = Patient_MedicalHistory ? xss(Patient_MedicalHistory) : null;
+
+  try {
+    const hashedPassword = await bcrypt.hash(Users_Password, saltRounds);
+
+    db.query('START TRANSACTION', async (err) => {
+      if (err) return res.status(500).json({ message: 'Database error', status: false });
+
+      const sqlUser = `INSERT INTO users (Users_Email, Users_Username, Users_Password, Users_Type)
+                       VALUES (?, ?, ?, 'patient')`;
+      db.query(sqlUser, [Users_Email, Users_Username, hashedPassword], (err, userResult) => {
+        if (err) {
+          db.query('ROLLBACK', () => { });
+          if (err.code === 'ER_DUP_ENTRY') {
+            return res.status(409).json({ message: 'Email or username already exists.', status: false });
+          }
+          console.error('Insert Users Error:', err);
+          return res.status(500).json({ message: 'Database error', status: false });
+        }
+
+        const Users_ID = userResult.insertId;
+
+        const sqlPatient = `INSERT INTO patient 
+          (Patient_FirstName, Patient_LastName, Patient_Phone, Patient_Gender, Patient_MedicalHistory, Users_ID)
+          VALUES (?, ?, ?, ?, ?, ?)`;
+        db.query(sqlPatient, [Patient_FirstName, Patient_LastName, Patient_Phone, Patient_Gender, Patient_MedicalHistory, Users_ID], (err, patientResult) => {
+          if (err) {
+            db.query('ROLLBACK', () => { });
+            console.error('Insert Patient Error:', err);
+            return res.status(500).json({ message: 'Database error', status: false });
+          }
+
+          db.query('COMMIT', (err) => {
+            if (err) {
+              db.query('ROLLBACK', () => { });
+              console.error('Commit Error:', err);
+              return res.status(500).json({ message: 'Database error', status: false });
+            }
+
+            res.status(201).json({
+              message: 'Patient registered successfully.',
+              status: true,
+              Users_ID: Users_ID,
+              Patient_ID: patientResult.insertId
+            });
+          });
+        });
+      });
+    });
+  } catch (err) {
+    console.error('Register Patient Error:', err);
+    res.status(500).json({ message: 'An unexpected error occurred.', status: false });
+  }
 });
 
 /////////////////////////////////////////////////////////////////////////////////////

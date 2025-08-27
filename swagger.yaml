@@ -421,6 +421,151 @@ paths:
                     example: false
       security: []
 
+  /api/register/patient:
+    post:
+      tags:
+        - Authentication
+      summary: Register a new patient
+      description: >
+        Registers a new patient account. All required fields must be provided and validated.
+        Password must be strong. First and last names can contain Thai or English letters.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - Users_Email
+                - Users_Username
+                - Users_Password
+                - Patient_FirstName
+                - Patient_LastName
+                - Patient_Gender
+              properties:
+                Users_Email:
+                  type: string
+                  format: email
+                  example: patient1@example.com
+                Users_Username:
+                  type: string
+                  example: patient1
+                Users_Password:
+                  type: string
+                  example: StrongPass1
+                Patient_FirstName:
+                  type: string
+                  example: Somchai
+                Patient_LastName:
+                  type: string
+                  example: Kongmee
+                Patient_Phone:
+                  type: string
+                  example: '0812345678'
+                Patient_Gender:
+                  type: string
+                  enum: [Male, Female]
+                  example: Male
+                Patient_MedicalHistory:
+                  type: string
+                  example: Has allergy to penicillin
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              required:
+                - Users_Email
+                - Users_Username
+                - Users_Password
+                - Patient_FirstName
+                - Patient_LastName
+                - Patient_Gender
+              properties:
+                Users_Email:
+                  type: string
+                  format: email
+                  example: patient1@example.com
+                Users_Username:
+                  type: string
+                  example: patient1
+                Users_Password:
+                  type: string
+                  example: StrongPass1
+                Patient_FirstName:
+                  type: string
+                  example: Somchai
+                Patient_LastName:
+                  type: string
+                  example: Kongmee
+                Patient_Phone:
+                  type: string
+                  example: '0812345678'
+                Patient_Gender:
+                  type: string
+                  enum: [Male, Female]
+                  example: Male
+                Patient_MedicalHistory:
+                  type: string
+                  example: Has allergy to penicillin
+      responses:
+        '201':
+          description: Patient registered successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Patient registered successfully.
+                  status:
+                    type: boolean
+                    example: true
+                  Users_ID:
+                    type: integer
+                    example: 1
+                  Patient_ID:
+                    type: integer
+                    example: 1
+        '400':
+          description: Invalid input / validation error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Please fill in all required fields.
+                  status:
+                    type: boolean
+                    example: false
+        '409':
+          description: Email or username already exists
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Email or username already exists.
+                  status:
+                    type: boolean
+                    example: false
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Database error
+                  status:
+                    type: boolean
+                    example: false
+
 components:
   securitySchemes:
     bearerAuth:
