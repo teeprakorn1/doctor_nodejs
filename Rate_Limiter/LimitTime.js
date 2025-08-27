@@ -1,16 +1,16 @@
 const rateLimit = require('express-rate-limit');
+const { ipKeyGenerator } = require('express-rate-limit');
 
-//Rate Limiter
+// Rate Limiter
 const rateLimiter = (windowMs, max) => {
   return rateLimit({
-    windowMs: windowMs, //Time
-    max: max, // Limit
+    windowMs: windowMs, // Time
+    max: max,           // Limit
     standardHeaders: true,
     legacyHeaders: false,
 
-    // Key generator
     keyGenerator: (req, res) => {
-      const ip = req.ip;
+      const ip = ipKeyGenerator(req)
       const userAgent = req.headers['user-agent'] || 'unknown-agent';
       return `${ip}-${userAgent}`;
     },
