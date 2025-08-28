@@ -283,11 +283,10 @@ app.post('/api/register/patient', RateLimiter(1 * 60 * 1000, 5), async (req, res
     return res.status(400).json({ message: 'Please fill in all required fields.', status: false });
   }
 
-  Users_Email = xss(Users_Email);
+  Users_Email = xss(Users_Email.trim());
   if (!validator.isEmail(Users_Email)) {
     return res.status(400).json({ message: 'Invalid email format.', status: false });
   }
-  Users_Email = validator.normalizeEmail(Users_Email);
 
   Users_Username = xss(Users_Username);
   if (!validator.isAlphanumeric(Users_Username) || Users_Username.length < 3 || Users_Username.length > 20) {
