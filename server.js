@@ -27,6 +27,7 @@ const allowedOrigins = [
   process.env.WEB_CLIENT_URL_DEV,
   process.env.WEB_CLIENT_URL_PROD,
   process.env.WEB_CLIENT_URL_PROD_2,
+  process.env.WEB_CLIENT_URL_PROD_3,
   null
 ];
 
