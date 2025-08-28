@@ -374,6 +374,56 @@ app.post('/api/register/patient', RateLimiter(1 * 60 * 1000, 5), async (req, res
   }
 });
 
+////////////////////////////////// PROFILE API ///////////////////////////////////////
+// API Get Profile Data by Token
+app.get('/api/profile/get', RateLimiter(0.5 * 60 * 1000, 24), VerifyTokens, async (req, res) => {
+  const userData = req.user;
+  const usersTypeID = userData.UsersType_ID;
+  const usersType = userData.Users_Type;
+
+  if (!usersType || !usersTypeID) {
+    return res.status(400).json({ message: "Missing user type or ID.", status: false });
+  }
+
+  try {
+    const usersType_upper = usersType.charAt(0).toUpperCase() + usersType.slice(1);
+    const tableName = db.escapeId(usersType);
+    const columnName = db.escapeId(`${usersType_upper}_ID`);
+
+    let sql;
+
+    if (usersType === 'doctor') {
+      sql = `SELECT ty.*, u.Users_Email, u.Users_Type, st.Specialty_Name FROM((${tableName} ty INNER JOIN specialty st ON 
+      ty.Specialty_ID = st.Specialty_ID) INNER JOIN users u ON ty.Users_ID = u.Users_ID)  WHERE ${columnName} = ? LIMIT 1`;
+    } else if (usersType === 'patient') {
+      sql = `SELECT ty.*, u.Users_Email, u.Users_Type FROM(${tableName} ty INNER JOIN users u ON 
+      ty.Users_ID = u.Users_ID) WHERE ${columnName} = ? LIMIT 1`;
+    } else {
+      return res.status(400).json({ message: "Invalid user type.", status: false });
+    }
+
+    db.query(sql, [usersTypeID], (err, result) => {
+      if (err) {
+        console.error('Database error (profile data)', err);
+        return res.status(500).json({ message: 'An error occurred on the server.', status: false });
+      }
+
+      if (result.length > 0) {
+        const profileData = result[0];
+        profileData['Users_Type_Table'] = usersType;
+        profileData['message'] = 'Profile data retrieved successfully.';
+        profileData['status'] = true;
+        res.status(200).json(profileData);
+      } else {
+        return res.status(404).json({ message: 'No profile data found for this user.', status: false });
+      }
+    });
+  } catch (error) {
+    console.error('Catch error', error);
+    res.status(500).json({ message: 'An unexpected error occurred.', status: false });
+  }
+});
+
 /////////////////////////////////////////////////////////////////////////////////////
 
 app.listen(process.env.SERVER_PORT, () => {

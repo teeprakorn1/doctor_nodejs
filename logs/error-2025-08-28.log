@@ -1,0 +1,6 @@
+[28-08-2025 19:42:19] ERROR: [User: anonymous] ← 500 POST /api/login | 9.47 ms from ::1
+[28-08-2025 20:38:52] ERROR: [User: anonymous] ← 500 POST /api/login | 10.00 ms from ::1
+[28-08-2025 20:54:51] ERROR: [User: anonymous] ← 500 POST /api/login | 9.60 ms from ::1
+[28-08-2025 21:01:12] ERROR: [User: anonymous] ← 500 POST /api/login | 7.78 ms from ::1
+[28-08-2025 21:12:43] ERROR: [User: anonymous] ← 500 POST /api/login | 8.24 ms from ::1
+[28-08-2025 22:04:30] ERROR: [User: anonymous] ← 500 POST /api/register/patient | 956.87 ms from ::1

@@ -1,6 +1,6 @@
 CREATE DATABASE IF NOT EXISTS doctorDB CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 USE doctorDB;
-
+ 
 CREATE TABLE Users(
 	Users_ID INT(13) NOT NULL AUTO_INCREMENT UNIQUE PRIMARY KEY,
     Users_Email VARCHAR(255) NOT NULL UNIQUE,
@@ -74,10 +74,10 @@ INSERT INTO AppointmentStatus (AppointmentStatus_Name, AppointmentStatus_Descrip
 
 -- Mock Data
 INSERT INTO Users (Users_Email, Users_Username, Users_Password, Users_Type) VALUES
-('patient1@gmail.com', 'patient1', 'hashedpassword1', 'patient'),
-('patient2@gmail.com', 'patient2', 'hashedpassword2', 'patient'),
-('doctor1@gmail.com', 'doctor1', 'hashedpassword3', 'doctor'),
-('doctor2@gmail.com', 'doctor2', 'hashedpassword4', 'doctor');
+('patient1@gmail.com', 'patient1', '$2b$14$P0/fIiNViv/HhvttBGxyX.I17YBqvZNGMQZH1rnUY03chVXjae0Ym', 'patient'),
+('patient2@gmail.com', 'patient2', '$2b$14$P0/fIiNViv/HhvttBGxyX.I17YBqvZNGMQZH1rnUY03chVXjae0Ym', 'patient'),
+('doctor1@gmail.com', 'doctor1', '$2b$14$P0/fIiNViv/HhvttBGxyX.I17YBqvZNGMQZH1rnUY03chVXjae0Ym', 'doctor'),
+('doctor2@gmail.com', 'doctor2', '$2b$14$P0/fIiNViv/HhvttBGxyX.I17YBqvZNGMQZH1rnUY03chVXjae0Ym', 'doctor');
 
 INSERT INTO Patient (Patient_FirstName, Patient_LastName, Patient_Gender, Users_ID) VALUES
 ('ชายน้อย', 'คนเหนือเมฆ', 'Male', 1), ('หญิงใหญ่', 'คนใต้ดิน', 'Female', 2);

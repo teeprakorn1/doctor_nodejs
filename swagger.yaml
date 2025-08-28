@@ -273,7 +273,7 @@ paths:
                     example: false
       security: []
 
-  /api/login/website:
+  /api/login:
     post:
       summary: Login Website
       description: Authenticates a doctor or patient user and sets an HttpOnly token cookie
@@ -565,6 +565,100 @@ paths:
                   status:
                     type: boolean
                     example: false
+
+  /api/profile/get:
+    get:
+      tags:
+        - Profile
+      summary: Get user profile by token
+      description: Retrieve the profile data of a logged-in user (doctor or patient) using the JWT token.
+      operationId: getProfileByToken
+      parameters: []
+      responses:
+        '200':
+          description: Profile data retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: "Profile data retrieved successfully."
+                  Users_Type_Table:
+                    type: string
+                    example: "patient"
+                  Users_Email:
+                    type: string
+                    example: "user@example.com"
+                  Users_Type:
+                    type: string
+                    enum: [patient, doctor]
+                  Patient_ID:
+                    type: integer
+                    example: 101
+                  Doctor_ID:
+                    type: integer
+                    example: 201
+                  Specialty_Name:
+                    type: string
+                    example: "Cardiology"
+        '400':
+          description: Missing or invalid user type / ID
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: "Missing user type or ID."
+        '401':
+          description: Unauthorized - Invalid or missing token
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: "Invalid Token."
+        '404':
+          description: Profile not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: "No profile data found for this user."
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: "An error occurred on the server."
+    security: []
 
 components:
   securitySchemes:
