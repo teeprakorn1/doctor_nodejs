@@ -142,7 +142,7 @@ CREATE DATABASE doctor_db;
 ```
 #### Start the backend server:
 ```bash
-npm start
+node ./server.js
 ```
 ### 3️⃣ Setup Frontend (React)
 #### Navigate to the frontend folder:
