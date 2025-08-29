@@ -944,6 +944,199 @@ paths:
                     type: string
                     example: An unexpected error occurred.
     security: []     
+    
+  /api/doctor/name/get/{doctorName}:
+    get:
+      summary: Get doctor by name
+      parameters:
+        - name: doctorName
+          in: path
+          required: true
+          schema:
+            type: string
+            maxLength: 100
+          description: Doctor first name or last name
+      responses:
+        '200':
+          description: Doctors retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: boolean
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        Doctor_ID:
+                          type: integer
+                        Doctor_FirstName:
+                          type: string
+                        Doctor_LastName:
+                          type: string
+                        Doctor_Phone:
+                          type: string
+                        Specialty_Name:
+                          type: string
+                  message:
+                    type: string
+        '400':
+          description: Invalid request
+        '404':
+          description: No doctors found
+        '500':
+          description: Server error
+      security: []
+
+  /api/appointment/create:
+    post:
+      summary: Create a new appointment
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                doctorId:
+                  type: integer
+                availabilityId:
+                  type: integer
+              required:
+                - doctorId
+                - availabilityId
+      responses:
+        '201':
+          description: Appointment created successfully
+        '400':
+          description: Missing required fields or already booked
+        '500':
+          description: Server error
+      security: []
+
+  /api/doctor/{doctorId}/availability:
+    get:
+      summary: Get available slots by doctor ID
+      parameters:
+        - name: doctorId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Availability retrieved successfully
+        '400':
+          description: Invalid doctor ID
+        '500':
+          description: Server error
+      security: []
+
+  /api/doctor/availability:
+    get:
+      summary: Get availability of logged-in doctor
+      responses:
+        '200':
+          description: Availability retrieved successfully
+        '400':
+          description: Invalid user
+        '500':
+          description: Server error
+      security: []
+
+  /api/doctor/availability:
+    post:
+      summary: Add availability for logged-in doctor
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                date:
+                  type: string
+                  format: date
+                startTime:
+                  type: string
+                  example: "09:00"
+                endTime:
+                  type: string
+                  example: "10:00"
+              required:
+                - date
+                - startTime
+                - endTime
+      responses:
+        '201':
+          description: Availability added successfully
+        '400':
+          description: Missing fields
+        '500':
+          description: Server error
+      security: []
+
+  /api/patient/appointment:
+    get:
+      summary: Get appointments of logged-in patient
+      responses:
+        '200':
+          description: Appointments retrieved successfully
+        '500':
+          description: Server error
+      security: []
+
+  /api/doctor/appointments/pending:
+    get:
+      summary: Get pending appointments for logged-in doctor
+      responses:
+        '200':
+          description: Pending appointments retrieved
+        '500':
+          description: Server error
+      security: []
+
+  /api/doctor/appointments/action:
+    post:
+      summary: Approve or reject an appointment
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                appointmentId:
+                  type: integer
+                action:
+                  type: string
+                  enum: [Confirmed, Cancelled]
+              required:
+                - appointmentId
+                - action
+      responses:
+        '200':
+          description: Update successful
+        '400':
+          description: Invalid request
+        '500':
+          description: Server error
+      security: []
+
+  /api/doctor/appointments/schedule:
+    get:
+      summary: Get full schedule of logged-in doctor
+      responses:
+        '200':
+          description: Appointments retrieved successfully
+        '400':
+          description: Invalid user
+        '500':
+          description: Server error
+      security: []
 
 components:
   securitySchemes:

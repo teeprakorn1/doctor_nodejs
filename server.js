@@ -699,11 +699,12 @@ app.get('/api/doctor/availability', RateLimiter(0.5 * 60 * 1000, 12), VerifyToke
     const Doctor_ID = doctorRes[0].Doctor_ID;
 
     const sql = `
-      SELECT Availability_ID, Availability_Date, Availability_StartTime, Availability_EndTime, Availability_IsBooked
+    SELECT Availability_ID, Availability_Date, Availability_StartTime, Availability_EndTime
       FROM availability
-      WHERE Doctor_ID = ?
+      WHERE Doctor_ID = ? AND Availability_IsBooked = 0
       ORDER BY Availability_Date ASC, Availability_StartTime ASC
     `;
+
     db.query(sql, [Doctor_ID], (err, result) => {
       if (err) return res.status(500).json({ message: 'Database error', status: false });
       res.status(200).json(result);
@@ -731,6 +732,130 @@ app.post('/api/doctor/availability', RateLimiter(0.5 * 60 * 1000, 12), VerifyTok
       res.status(201).json({ message: 'Availability added successfully', status: true });
     });
   });
+});
+
+// GET /api/patient/appointment
+app.get('/api/patient/appointment', VerifyTokens, (req, res) => {
+  const Users_ID = req.user?.Users_ID;
+
+  const sqlGetPatient = `SELECT Patient_ID FROM patient WHERE Users_ID = ? LIMIT 1`;
+  db.query(sqlGetPatient, [Users_ID], (err, patientRes) => {
+    if (err || patientRes.length === 0) {
+      return res.status(500).json({ message: 'Patient not found', status: false });
+    }
+
+    const Patient_ID = patientRes[0].Patient_ID;
+    const sqlAppointments = `
+      SELECT a.Appointment_ID, a.Appointment_RegisTime,
+             d.Doctor_FirstName, d.Doctor_LastName, s.Specialty_Name,
+             av.Availability_Date, av.Availability_StartTime, av.Availability_EndTime,
+             ast.AppointmentStatus_Name, ast.AppointmentStatus_Description
+      FROM appointment a
+      INNER JOIN doctor d ON a.Doctor_ID = d.Doctor_ID
+      INNER JOIN specialty s ON d.Specialty_ID = s.Specialty_ID
+      INNER JOIN availability av ON a.Availability_ID = av.Availability_ID
+      INNER JOIN appointmentstatus ast ON a.AppointmentStatus_ID = ast.AppointmentStatus_ID
+      WHERE a.Patient_ID = ?
+      ORDER BY a.Appointment_RegisTime DESC
+    `;
+    db.query(sqlAppointments, [Patient_ID], (err, result) => {
+      if (err) return res.status(500).json({ message: 'Database error', status: false });
+      res.status(200).json({ data: result, status: true });
+    });
+  });
+});
+
+// GET /api/doctor/appointments/pending**
+app.get('/api/doctor/appointments/pending', VerifyTokens, (req, res) => {
+  const Users_ID = req.user?.Users_ID;
+
+  const sqlGetDoctor = `SELECT Doctor_ID FROM doctor WHERE Users_ID = ? LIMIT 1`;
+  db.query(sqlGetDoctor, [Users_ID], (err, doctorRes) => {
+    if (err || doctorRes.length === 0) return res.status(500).json({ status: false, message: 'Doctor not found' });
+    const Doctor_ID = doctorRes[0].Doctor_ID;
+
+    const sql = `
+      SELECT a.Appointment_ID, a.Appointment_RegisTime, a.Patient_ID,
+             p.Patient_FirstName, p.Patient_LastName,
+             av.Availability_Date, av.Availability_StartTime, av.Availability_EndTime,
+             ast.AppointmentStatus_Name AS status, ast.AppointmentStatus_Description
+      FROM appointment a
+      INNER JOIN patient p ON a.Patient_ID = p.Patient_ID
+      INNER JOIN availability av ON a.Availability_ID = av.Availability_ID
+      INNER JOIN appointmentstatus ast ON a.AppointmentStatus_ID = ast.AppointmentStatus_ID
+      WHERE a.Doctor_ID = ? AND ast.AppointmentStatus_Name = 'Pending'
+      ORDER BY a.Appointment_RegisTime DESC
+    `;
+    db.query(sql, [Doctor_ID], (err, result) => {
+      if (err) return res.status(500).json({ status: false, message: 'Database error' });
+      res.status(200).json({ status: true, data: result });
+    });
+  });
+});
+
+// POST /api/doctor/appointments/action
+app.post('/api/doctor/appointments/action', VerifyTokens, (req, res) => {
+  const Users_ID = req.user?.Users_ID;
+  const { appointmentId, action } = req.body;
+
+  if (!appointmentId || !['Confirmed', 'Cancelled'].includes(action)) {
+    return res.status(400).json({ status: false, message: 'ข้อมูลไม่ถูกต้อง' });
+  }
+
+  const sqlGetDoctor = `SELECT Doctor_ID FROM doctor WHERE Users_ID = ? LIMIT 1`;
+  db.query(sqlGetDoctor, [Users_ID], (err, doctorRes) => {
+    if (err || doctorRes.length === 0) return res.status(500).json({ status: false, message: 'Doctor not found' });
+    const Doctor_ID = doctorRes[0].Doctor_ID;
+
+    const sqlGetStatus = `SELECT AppointmentStatus_ID FROM appointmentstatus WHERE AppointmentStatus_Name = ? LIMIT 1`;
+    db.query(sqlGetStatus, [action], (err, statusRes) => {
+      if (err || statusRes.length === 0) return res.status(500).json({ status: false, message: 'Status not found' });
+      const AppointmentStatus_ID = statusRes[0].AppointmentStatus_ID;
+
+      const sqlUpdate = `UPDATE appointment SET AppointmentStatus_ID = ? WHERE Appointment_ID = ? AND Doctor_ID = ?`;
+      db.query(sqlUpdate, [AppointmentStatus_ID, appointmentId, Doctor_ID], (err) => {
+        if (err) return res.status(500).json({ status: false, message: 'Database error' });
+        res.status(200).json({ status: true, message: 'Update successful' });
+      });
+    });
+  });
+});
+
+// GET /api/doctor/appointments/schedule
+app.get('/api/doctor/appointments/schedule', VerifyTokens, (req, res) => {
+    const Users_ID = req.user?.Users_ID;
+    if (!Users_ID) return res.status(400).json({ status: false, message: 'Invalid user' });
+
+    const sqlGetDoctorId = `SELECT Doctor_ID FROM doctor WHERE Users_ID = ? LIMIT 1`;
+    db.query(sqlGetDoctorId, [Users_ID], (err, doctorRes) => {
+        if (err || doctorRes.length === 0) 
+            return res.status(500).json({ status: false, message: 'Doctor not found' });
+
+        const Doctor_ID = doctorRes[0].Doctor_ID;
+
+        const sqlAppointments = `
+            SELECT a.Appointment_ID, a.Appointment_RegisTime,
+                   p.Patient_FirstName, p.Patient_LastName, p.Patient_Phone,
+                   s.Specialty_Name,
+                   av.Availability_Date, av.Availability_StartTime, av.Availability_EndTime,
+                   ast.AppointmentStatus_Name AS status, ast.AppointmentStatus_Description
+            FROM appointment a
+            INNER JOIN patient p ON a.Patient_ID = p.Patient_ID
+            INNER JOIN doctor d ON a.Doctor_ID = d.Doctor_ID
+            INNER JOIN specialty s ON d.Specialty_ID = s.Specialty_ID
+            INNER JOIN availability av ON a.Availability_ID = av.Availability_ID
+            INNER JOIN appointmentstatus ast ON a.AppointmentStatus_ID = ast.AppointmentStatus_ID
+            WHERE a.Doctor_ID = ?
+            ORDER BY av.Availability_Date ASC, av.Availability_StartTime ASC
+        `;
+        db.query(sqlAppointments, [Doctor_ID], (err, result) => {
+            if (err) return res.status(500).json({ status: false, message: 'Database error' });
+            if (!result || result.length === 0) 
+                return res.status(200).json({ status: true, data: [], message: 'No appointments found' });
+
+            res.status(200).json({ status: true, data: result, message: 'Appointments retrieved successfully' });
+        });
+    });
 });
 
 /////////////////////////////////////////////////////////////////////////////////////

@@ -70,7 +70,7 @@ CREATE TABLE Appointment(
 );
 
 INSERT INTO AppointmentStatus (AppointmentStatus_Name, AppointmentStatus_Description) VALUES
-('Pending', 'รอการยืนยัน'),('Confirmed', 'ได้รับการยืนยันแล้ว'),('Completed', 'การนัดหมายเสร็จสิ้น'),('Cancelled', 'ยกเลิกการนัดหมาย'),('No-show', 'ผู้ป่วยไม่มาตามนัด');
+('Pending', 'รอการยืนยัน'),('Confirmed', 'ได้รับการยืนยันแล้ว'),('Completed', 'การนัดหมายเสร็จสิ้น'),('Cancelled', 'ยกเลิกการนัดหมาย');
 
 -- Mock Data
 INSERT INTO Users (Users_Email, Users_Username, Users_Password, Users_Type) VALUES
