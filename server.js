@@ -424,6 +424,96 @@ app.get('/api/profile/get', RateLimiter(0.5 * 60 * 1000, 24), VerifyTokens, asyn
   }
 });
 
+//API Edit Patient Profile
+app.put('/api/profile/patient/update', RateLimiter(0.5 * 60 * 1000, 12), VerifyTokens, async (req, res) => {
+  const userData = req.user;
+  const Users_ID = userData?.Users_ID;
+  const Users_Type = userData?.Users_Type;
+
+  if (!Users_ID || typeof Users_ID !== 'number') {
+    return res.status(400).json({ message: "Missing or invalid Users_ID from token.", status: false });
+  }
+
+  if (Users_Type?.toLowerCase() !== 'patient') {
+    return res.status(403).json({ message: "Permission denied. Only patients can perform this action.", status: false });
+  }
+
+  let { Patient_FirstName, Patient_LastName, Patient_Phone, Patient_Gender, Patient_MedicalHistory } = req.body || {};
+
+  if (Patient_FirstName && (typeof Patient_FirstName !== "string" || Patient_FirstName.length > 100)) {
+    return res.status(400).json({ message: "Invalid first name (must be a string and <= 100 characters).", status: false });
+  }
+
+  if (Patient_LastName && (typeof Patient_LastName !== "string" || Patient_LastName.length > 100)) {
+    return res.status(400).json({ message: "Invalid last name (must be a string and <= 100 characters).", status: false });
+  }
+
+  if (Patient_Phone) {
+    if (!validator.isMobilePhone(Patient_Phone, 'th-TH', { strictMode: false })) {
+      return res.status(400).json({ message: "Invalid Thai phone number format.", status: false });
+    }
+    if (Patient_Phone.length > 20 || Patient_Phone.length < 8) {
+      return res.status(400).json({ message: "Phone number length must be between 8 and 20 digits.", status: false });
+    }
+    if (!/^\d+$/.test(Patient_Phone)) {
+      return res.status(400).json({ message: "Phone number must contain only digits.", status: false });
+    }
+  }
+
+  const allowedGenders = ["male", "female"];
+  if (Patient_Gender && !allowedGenders.includes(Patient_Gender.toLowerCase())) {
+    return res.status(400).json({ message: "Invalid gender value.", status: false });
+  }
+
+  if (Patient_MedicalHistory && Patient_MedicalHistory.length > 1023) {
+    return res.status(400).json({ message: "Medical history text too long (max 1023 characters).", status: false });
+  }
+
+  const allowedFields = { Patient_FirstName, Patient_LastName, Patient_Phone, Patient_Gender, Patient_MedicalHistory };
+  const fieldsToUpdate = [];
+  const values = [];
+
+  for (const [key, value] of Object.entries(allowedFields)) {
+    if (value !== undefined) {
+      fieldsToUpdate.push(`${key} = ?`);
+      values.push(value);
+    }
+  }
+
+  if (fieldsToUpdate.length === 0) {
+    return res.status(400).json({ message: "No fields provided for update.", status: false });
+  }
+
+  const sqlCheck = "SELECT Patient_ID FROM patient WHERE Users_ID = ?";
+  db.query(sqlCheck, [Users_ID], (err, result) => {
+    if (err) {
+      console.error("Database error (patient check)", err);
+      return res.status(500).json({ message: "Database error occurred.", status: false });
+    }
+
+    if (result.length === 0) {
+      return res.status(404).json({ message: "Patient profile not found.", status: false });
+    }
+
+    const Patient_ID = result[0].Patient_ID;
+    const sqlUpdate = `UPDATE patient SET ${fieldsToUpdate.join(", ")} WHERE Patient_ID = ?`;
+    values.push(Patient_ID);
+
+    db.query(sqlUpdate, values, (err, updateResult) => {
+      if (err) {
+        console.error("Database error (patient update)", err);
+        return res.status(500).json({ message: "Database error occurred.", status: false });
+      }
+
+      if (updateResult.affectedRows > 0) {
+        return res.status(200).json({ message: "Patient profile updated successfully.", status: true });
+      } else {
+        return res.status(404).json({ message: "No changes made or patient not found.", status: false });
+      }
+    });
+  });
+});
+
 /////////////////////////////////////////////////////////////////////////////////////
 
 app.listen(process.env.SERVER_PORT, () => {

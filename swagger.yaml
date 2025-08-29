@@ -6,7 +6,7 @@ info:
     Doctor API documentation for the Telemedicine system.
 
 servers:
-  - url: http://localhost:3000
+  - url: http://localhost:4000
     description: Local development server
 
 paths:
@@ -658,6 +658,113 @@ paths:
                   message:
                     type: string
                     example: "An error occurred on the server."
+    security: []
+
+  /api/profile/patient/update:
+    put:
+      tags:
+        - Profile
+      summary: Update patient profile
+      description: >
+        Allows authenticated patients to update their profile information.
+        Only fields provided in the request body will be updated.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                Patient_FirstName:
+                  type: string
+                  maxLength: 100
+                  description: Patient's first name (optional)
+                Patient_LastName:
+                  type: string
+                  maxLength: 100
+                  description: Patient's last name (optional)
+                Patient_Phone:
+                  type: string
+                  description: Thai phone number (digits only, 8-20 characters, optional)
+                Patient_Gender:
+                  type: string
+                  enum: [male, female]
+                  description: Patient's gender (optional)
+                Patient_MedicalHistory:
+                  type: string
+                  maxLength: 1023
+                  description: Patient's medical history (optional)
+      responses:
+        '200':
+          description: Profile updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  status:
+                    type: boolean
+                  example:
+                    message: "Patient profile updated successfully."
+                    status: true
+        '400':
+          description: Bad request due to invalid or missing data
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  status:
+                    type: boolean
+                  example:
+                    message: "No fields provided for update."
+                    status: false
+        '403':
+          description: Forbidden - user is not a patient
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  status:
+                    type: boolean
+                  example:
+                    message: "Permission denied. Only patients can perform this action."
+                    status: false
+        '404':
+          description: Patient profile not found or no changes made
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  status:
+                    type: boolean
+                  example:
+                    message: "Patient profile not found."
+                    status: false
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  status:
+                    type: boolean
+                  example:
+                    message: "Database error occurred."
+                    status: false
     security: []
 
 components:
