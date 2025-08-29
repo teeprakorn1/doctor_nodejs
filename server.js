@@ -514,6 +514,225 @@ app.put('/api/profile/patient/update', RateLimiter(0.5 * 60 * 1000, 12), VerifyT
   });
 });
 
+////////////////////////////////// DOCTOR API ///////////////////////////////////////
+// API get Doctor by Specialty_Name
+app.get('/api/doctor/specialty/get/:Specialty_Name', RateLimiter(0.5 * 60 * 1000, 12), VerifyTokens, async (req, res) => {
+  const userData = req.user;
+  const Users_ID = userData?.Users_ID;
+  const { Specialty_Name } = req.params;
+
+  if (!Users_ID || typeof Users_ID !== 'number') {
+    return res.status(400).json({ message: "Missing or invalid Users_ID from token.", status: false });
+  }
+
+  if (!Specialty_Name || typeof Specialty_Name !== 'string' || Specialty_Name.length > 100) {
+    return res.status(400).json({ message: "Invalid Specialty parameter.", status: false });
+  }
+
+  try {
+    const sql = `
+      SELECT d.Doctor_ID, d.Doctor_FirstName, d.Doctor_LastName, d.Doctor_Phone, 
+             s.Specialty_Name 
+      FROM doctor d 
+      INNER JOIN specialty s ON d.Specialty_ID = s.Specialty_ID 
+      INNER JOIN users u ON d.Users_ID = u.Users_ID 
+      WHERE s.Specialty_Name LIKE ? AND u.Users_IsActive = 1
+    `;
+
+    const searchParam = `%${Specialty_Name}%`;
+
+    db.query(sql, [searchParam], (err, result) => {
+      if (err) {
+        console.error('Database error (get by Specialty_Name)', err);
+        return res.status(500).json({ message: 'An error occurred on the server.', status: false });
+      }
+
+      if (result.length > 0) {
+        return res.status(200).json({ data: result, message: 'Specialty retrieved successfully.', status: true });
+      } else {
+        return res.status(404).json({ message: 'No doctors found for this specialty.', status: false });
+      }
+    });
+  } catch (error) {
+    console.error('Catch error (get by Specialty_Name)', error);
+    res.status(500).json({ message: 'An unexpected error occurred.', status: false });
+  }
+});
+
+// API get Doctor by doctorName
+app.get('/api/doctor/name/get/:doctorName', RateLimiter(0.5 * 60 * 1000, 12), VerifyTokens, async (req, res) => {
+  const userData = req.user;
+  const Users_ID = userData?.Users_ID;
+  const { doctorName } = req.params;
+
+  if (!Users_ID || typeof Users_ID !== 'number') {
+    return res.status(400).json({ message: "Missing or invalid Users_ID from token.", status: false });
+  }
+
+  if (!doctorName || typeof doctorName !== 'string' || doctorName.length > 100) {
+    return res.status(400).json({ message: "Invalid doctorName parameter.", status: false });
+  }
+
+  try {
+    const sql = `
+      SELECT d.Doctor_ID, d.Doctor_FirstName, d.Doctor_LastName, d.Doctor_Phone, 
+             s.Specialty_Name 
+      FROM doctor d 
+      INNER JOIN specialty s ON d.Specialty_ID = s.Specialty_ID 
+      INNER JOIN users u ON d.Users_ID = u.Users_ID 
+      WHERE (d.Doctor_FirstName LIKE ? OR d.Doctor_LastName LIKE ?) 
+        AND u.Users_IsActive = 1
+    `;
+
+    const searchParam = `%${doctorName}%`;
+
+    db.query(sql, [searchParam, searchParam], (err, result) => {
+      if (err) {
+        console.error('Database error (get by doctorName)', err);
+        return res.status(500).json({ message: 'An error occurred on the server.', status: false });
+      }
+
+      if (result.length > 0) {
+        return res.status(200).json({ data: result, message: 'Doctors retrieved successfully.', status: true });
+      } else {
+        return res.status(404).json({ message: 'No doctors found with this name.', status: false });
+      }
+    });
+  } catch (error) {
+    console.error('Catch error (get by doctorName)', error);
+    res.status(500).json({ message: 'An unexpected error occurred.', status: false });
+  }
+});
+
+// POST /api/appointment/create
+app.post('/api/appointment/create', RateLimiter(0.5 * 60 * 1000, 12), VerifyTokens, (req, res) => {
+  const Users_ID = req.user?.Users_ID;
+  const { doctorId, availabilityId } = req.body;
+
+  if (!Users_ID || !doctorId || !availabilityId) {
+    return res.status(400).json({ message: "Missing required fields", status: false });
+  }
+
+  const sqlGetPatient = `SELECT Patient_ID FROM patient WHERE Users_ID = ? LIMIT 1`;
+  db.query(sqlGetPatient, [Users_ID], (err, patientRes) => {
+    if (err || patientRes.length === 0) {
+      return res.status(500).json({ message: "Patient not found", status: false });
+    }
+
+    const Patient_ID = patientRes[0].Patient_ID;
+
+    const sqlCheckAvailability = `
+            SELECT Availability_IsBooked FROM availability 
+            WHERE Availability_ID = ? AND Doctor_ID = ?
+            LIMIT 1
+        `;
+    db.query(sqlCheckAvailability, [availabilityId, doctorId], (err, availRes) => {
+      if (err || availRes.length === 0) {
+        return res.status(400).json({ message: "Availability not found", status: false });
+      }
+
+      if (availRes[0].Availability_IsBooked) {
+        return res.status(400).json({ message: "เวลานี้ถูกจองแล้ว", status: false });
+      }
+
+      const sqlGetStatus = `SELECT AppointmentStatus_ID FROM appointmentstatus WHERE AppointmentStatus_Name = 'Pending' LIMIT 1`;
+      db.query(sqlGetStatus, (err, statusRes) => {
+        if (err || statusRes.length === 0) {
+          return res.status(500).json({ message: "Appointment status not found", status: false });
+        }
+
+        const AppointmentStatus_ID = statusRes[0].AppointmentStatus_ID;
+        const sqlInsert = `
+                    INSERT INTO appointment (Doctor_ID, Patient_ID, Availability_ID, AppointmentStatus_ID)
+                    VALUES (?, ?, ?, ?)
+                `;
+        db.query(sqlInsert, [doctorId, Patient_ID, availabilityId, AppointmentStatus_ID], (err, insertRes) => {
+          if (err) {
+            console.error(err);
+            return res.status(500).json({ message: "Database error", status: false });
+          }
+
+          const sqlUpdateAvailability = `UPDATE availability SET Availability_IsBooked = 1 WHERE Availability_ID = ?`;
+          db.query(sqlUpdateAvailability, [availabilityId], (err) => {
+            if (err) console.error('Update availability error', err);
+            res.status(201).json({ message: "Appointment created successfully", status: true });
+          });
+        });
+      });
+    });
+  });
+});
+
+// API Get Availability by doctorId
+app.get('/api/doctor/:doctorId/availability', RateLimiter(0.5 * 60 * 1000, 12), VerifyTokens, (req, res) => {
+  const { doctorId } = req.params;
+
+  if (!doctorId || isNaN(doctorId)) {
+    return res.status(400).json({ message: 'Invalid doctorId parameter.', status: false });
+  }
+
+  const sql = `
+    SELECT Availability_ID, Availability_Date, Availability_StartTime, Availability_EndTime
+    FROM availability
+    WHERE Doctor_ID = ? AND Availability_IsBooked = 0
+    ORDER BY Availability_Date ASC, Availability_StartTime ASC
+  `;
+
+  db.query(sql, [doctorId], (err, result) => {
+    if (err) {
+      console.error('Database error (get availability)', err);
+      return res.status(500).json({ message: 'Database error.', status: false });
+    }
+
+    res.status(200).json({ data: result, message: 'Availability retrieved successfully.', status: true });
+  });
+});
+
+// API Get Doctor's Availability
+app.get('/api/doctor/availability', RateLimiter(0.5 * 60 * 1000, 12), VerifyTokens, (req, res) => {
+  const Users_ID = req.user?.Users_ID;
+  if (!Users_ID) return res.status(400).json({ message: 'Invalid user', status: false });
+
+  const sqlGetDoctorId = `SELECT Doctor_ID FROM doctor WHERE Users_ID = ? LIMIT 1`;
+  db.query(sqlGetDoctorId, [Users_ID], (err, doctorRes) => {
+    if (err || doctorRes.length === 0) return res.status(500).json({ message: 'Doctor not found', status: false });
+    const Doctor_ID = doctorRes[0].Doctor_ID;
+
+    const sql = `
+      SELECT Availability_ID, Availability_Date, Availability_StartTime, Availability_EndTime, Availability_IsBooked
+      FROM availability
+      WHERE Doctor_ID = ?
+      ORDER BY Availability_Date ASC, Availability_StartTime ASC
+    `;
+    db.query(sql, [Doctor_ID], (err, result) => {
+      if (err) return res.status(500).json({ message: 'Database error', status: false });
+      res.status(200).json(result);
+    });
+  });
+});
+
+// API Add Availability
+app.post('/api/doctor/availability', RateLimiter(0.5 * 60 * 1000, 12), VerifyTokens, (req, res) => {
+  const Users_ID = req.user?.Users_ID;
+  const { date, startTime, endTime } = req.body || {};
+  if (!Users_ID || !date || !startTime || !endTime) return res.status(400).json({ message: 'Missing fields', status: false });
+
+  const sqlGetDoctorId = `SELECT Doctor_ID FROM doctor WHERE Users_ID = ? LIMIT 1`;
+  db.query(sqlGetDoctorId, [Users_ID], (err, doctorRes) => {
+    if (err || doctorRes.length === 0) return res.status(500).json({ message: 'Doctor not found', status: false });
+    const Doctor_ID = doctorRes[0].Doctor_ID;
+
+    const sqlInsert = `
+      INSERT INTO availability (Doctor_ID, Availability_Date, Availability_StartTime, Availability_EndTime)
+      VALUES (?, ?, ?, ?)
+    `;
+    db.query(sqlInsert, [Doctor_ID, date, startTime, endTime], (err, insertRes) => {
+      if (err) return res.status(500).json({ message: 'Database error', status: false });
+      res.status(201).json({ message: 'Availability added successfully', status: true });
+    });
+  });
+});
+
 /////////////////////////////////////////////////////////////////////////////////////
 
 app.listen(process.env.SERVER_PORT, () => {

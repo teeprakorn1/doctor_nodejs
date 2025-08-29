@@ -767,6 +767,184 @@ paths:
                     status: false
     security: []
 
+  /api/doctor/specialty/get/{Specialty_Name}:
+    get:
+      tags:
+        - Doctor
+      summary: Get doctors by specialty name
+      description: Retrieve a list of active doctors matching the given specialty name (partial match allowed)
+      parameters:
+        - name: Specialty_Name
+          in: path
+          required: true
+          description: Specialty name to search for (partial match supported)
+          schema:
+            type: string
+            maxLength: 100
+      responses:
+        '200':
+          description: Doctors found successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        Doctor_ID:
+                          type: integer
+                          example: 1
+                        Doctor_FirstName:
+                          type: string
+                          example: John
+                        Doctor_LastName:
+                          type: string
+                          example: Doe
+                        Doctor_Phone:
+                          type: string
+                          example: "0812345678"
+                        Specialty_Name:
+                          type: string
+                          example: Cardiology
+                  message:
+                    type: string
+                    example: Specialty retrieved successfully.
+                  status:
+                    type: boolean
+                    example: true
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Invalid Specialty parameter.
+                  status:
+                    type: boolean
+                    example: false
+        '404':
+          description: No doctors found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: No doctors found for this specialty.
+                  status:
+                    type: boolean
+                    example: false
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: An unexpected error occurred.
+                  status:
+                    type: boolean
+                    example: false
+    security: []      
+
+  /api/doctor/name/get/{doctorName}:
+    get:
+      summary: Get doctors by first or last name
+      description: Retrieve a list of doctors whose first name or last name matches the search query. Requires authentication.
+      tags:
+        - Doctor
+      parameters:
+        - name: doctorName
+          in: path
+          description: The first or last name of the doctor to search
+          required: true
+          schema:
+            type: string
+            maxLength: 100
+      responses:
+        '200':
+          description: List of doctors found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: boolean
+                    example: true
+                  message:
+                    type: string
+                    example: Doctors retrieved successfully.
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        Doctor_ID:
+                          type: integer
+                          example: 1
+                        Doctor_FirstName:
+                          type: string
+                          example: John
+                        Doctor_LastName:
+                          type: string
+                          example: Doe
+                        Doctor_Phone:
+                          type: string
+                          example: "0812345678"
+                        Specialty_Name:
+                          type: string
+                          example: Cardiology
+        '400':
+          description: Invalid user ID or doctorName parameter
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: Missing or invalid Users_ID from token.
+        '404':
+          description: No doctors found with this name
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: No doctors found with this name.
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: boolean
+                    example: false
+                  message:
+                    type: string
+                    example: An unexpected error occurred.
+    security: []     
+
 components:
   securitySchemes:
     bearerAuth:
